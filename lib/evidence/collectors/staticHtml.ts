@@ -21,12 +21,6 @@ export async function fetchStatic(url: string): Promise<StaticFetchResult> {
   return { url, finalUrl: res.url, status: res.status, html };
 }
 
-let evidenceCounter = 0;
-function nextRef() {
-  evidenceCounter += 1;
-  return `ev_s${evidenceCounter}`;
-}
-
 /**
  * Static HTML collector (detection_method: static_html).
  * Extracts tag signatures, metadata, platform, and geography signals.
@@ -39,6 +33,11 @@ export function collectStatic(fetched: StaticFetchResult): EvidenceItem[] {
   const $ = cheerio.load(html);
   const now = new Date().toISOString();
   const items: EvidenceItem[] = [];
+
+  // Counter is local to this call — ref ids are scoped per collection run and
+  // never shared across requests/warm server instances.
+  let counter = 0;
+  const nextRef = () => `ev_s${(counter += 1)}`;
 
   const push = (
     observation: string,

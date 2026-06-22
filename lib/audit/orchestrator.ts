@@ -139,15 +139,24 @@ async function persistEvidence(
     page_url: e.pageUrl ?? null,
     request_url: e.requestUrl ?? null,
     raw_evidence_snippet: e.rawSnippet ?? null,
+    // Carry the client-generated refId so we can map returned ids back to the
+    // originating item WITHOUT relying on insert/return order (which SQL does
+    // not guarantee). Every finding then links to the correct evidence.
+    raw: { _ref: e.refId },
     confidence: e.confidence,
     captured_at: e.capturedAt,
   }));
 
-  const { data: inserted } = await db.from("evidence").insert(rows).select("id");
-  inserted?.forEach((row, i) => {
-    const ref = items[i]?.refId;
+  const { data: inserted, error: insertErr } = await db
+    .from("evidence")
+    .insert(rows)
+    .select("id, raw");
+  if (insertErr) throw new Error(`Failed to persist evidence: ${insertErr.message}`);
+
+  for (const row of inserted ?? []) {
+    const ref = (row.raw as { _ref?: string } | null)?._ref;
     if (ref) map.set(ref, row.id);
-  });
+  }
   return map;
 }
 
