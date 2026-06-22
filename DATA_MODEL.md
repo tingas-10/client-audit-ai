@@ -25,7 +25,8 @@ companies 1───* audits            (a company can be audited multiple times
 audits 1───* audit_sections
 audit_sections 1───* findings                 (D12: findings are a real table)
 findings *───* evidence  (via finding_evidence join — D12: FK-enforced sourcing)
-audits 1───* competitors
+audits 1───* competitors          (relationship: direct | indirect | aspirational)
+audits 1───1 detected_geography   (first-class detected market/geography)
 audits 1───* sources
 sources 1───* evidence
 audits 1───* scores               (Phase 2 — no scorecard in MVP, D7)
@@ -68,7 +69,21 @@ The audited brand/company (deduplicated by canonical domain).
 | canonical_domain | text | normalized |
 | industry | text | detected (confidence in detection field) |
 | business_model | text | detected |
+| what_it_sells | text | detected — products/services offered |
 | created_at | timestamptz | |
+
+### `detected_geography` (first-class detected market/geography)
+The auto-detected likely market(s)/geography for an audit, with confidence and evidence. One row per audit (the geography detected for that run); kept first-class (not buried in `audits.detection`) so it can be queried, displayed, and sourced.
+| field | type | notes |
+|---|---|---|
+| id | uuid (pk) | |
+| audit_id | uuid (fk → audits) | |
+| primary_markets | text[] | e.g. `{"US","CA"}` or named regions |
+| basis | text | observable signals used (currency/locale, language, shipping/contact regions, ccTLD, `hreflang`) |
+| confidence | confidence_level (enum) | `high / medium / low / unverified` |
+| evidence_ids | uuid[] | references to `evidence` |
+
+> Market/geography is an **inference** unless the brand states it explicitly; never assert a market without a supporting evidence signal.
 
 ### `audits`
 | field | type | notes |
@@ -78,7 +93,7 @@ The audited brand/company (deduplicated by canonical domain).
 | company_id | uuid (fk) | |
 | input_url | text | primary input |
 | status | audit_status (enum) | `queued / detecting / awaiting_clarification / generating / verifying / completed / partial / failed` (D12 enum; `partial` = stopped at a ceiling per D2/D3) |
-| detection | jsonb | brand/industry/model/competitors + confidence + evidence_ids |
+| detection | jsonb | full detection contract: brand/what_it_sells/industry/business_model/market_geography/competitors + confidence + evidence_ids (geography also persisted first-class in `detected_geography`) |
 | version | int | **D12** — audit version (default 1) |
 | supersedes_audit_id | uuid (fk → audits, nullable) | **D12** — links a re-run to the prior audit (deltas) |
 | total_cost_usd | numeric | **D12** — rolled up from `jobs` for budget enforcement (D3) |
@@ -150,8 +165,8 @@ A specific observed signal, used to back claims.
 | id | uuid (pk) | |
 | audit_id | uuid (fk) | |
 | name | text | |
-| relationship | text | direct / adjacent |
-| confidence | text | |
+| relationship | competitor_relationship (enum) | `direct / indirect / aspirational` (replaces the earlier `adjacent`) |
+| confidence | confidence_level (enum) | |
 | evidence_ids | uuid[] | |
 
 ### `scores` *(Phase 2 — not used in MVP per D7)*
@@ -218,7 +233,8 @@ Deferred keys (Phase 2+), same convention: `industry_context`, `competitive_benc
 **Enums / check constraints** (Postgres enums or `CHECK`):
 - `confidence_level`: `high | medium | low | unverified`
 - `claim_type`: `observed_fact | inference | assumption`
-- `audit_status`, `job_step`, `job_status`, `section_key`, `competitors.relationship` (`direct | adjacent`)
+- `competitor_relationship`: `direct | indirect | aspirational`
+- `audit_status`, `job_step`, `job_status`, `section_key`
 
 ## 4. Row-Level Security (RLS)
 - Enable RLS on every table with org-scoped data.

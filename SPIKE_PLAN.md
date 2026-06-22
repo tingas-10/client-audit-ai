@@ -8,6 +8,16 @@
 
 ---
 
+## 📦 Relationship to the full product (read first)
+
+> **The final product remains: user enters any public brand/company URL → Client Audit AI automatically generates a full, exhaustive, source-backed client audit.** From that single URL the system auto-identifies the brand, what it sells, industry, business model, likely market/geography, and direct/indirect/aspirational competitors, collects observable evidence, and produces the complete audit — separating observed facts, inferences, assumptions, and unknowns, and asking extra questions only when truly necessary (see [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) §4).
+>
+> **This spike validates exactly ONE link of that automated pipeline** — the *evidence → sourced finding → verification* loop for a single section — so we can prove it works before building the rest.
+>
+> **The spike does NOT redefine the product as a manual, one-URL/one-section tool.** The manual steps here (see §7) exist only to measure the hypothesis cheaply; in the product they are **automated** (auto-detection, multi-section generation, the async pipeline, persistence, and UI). Auto-detection and full coverage are **assumed and deferred to Phase 1, not descoped.**
+
+---
+
 ## 1. Spike objective
 
 **Prove or disprove this hypothesis:**
