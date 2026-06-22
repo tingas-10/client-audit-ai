@@ -15,6 +15,14 @@ const serverSchema = z.object({
   APP_BASE_URL: z.string().url().default("http://localhost:3000"),
   AUDIT_COST_BUDGET_USD: z.coerce.number().positive().default(2.0),
   AUDIT_COST_HARD_CAP_USD: z.coerce.number().positive().default(3.5),
+  // Headless runtime network capture for Analytics & Tracking (Phase 1.1).
+  ANALYTICS_RENDER_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  RENDER_TIMEOUT_MS: z.coerce.number().int().positive().default(12000),
+  // Optional local override for the Chromium executable (else uses system Chrome).
+  PLAYWRIGHT_CHROMIUM_PATH: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
