@@ -24,6 +24,8 @@
 ---
 
 ## Phase 0.75 — De-risking spike (recommended before scaffolding)
+> **Scope note:** this spike validates only **one link** of the pipeline (evidence → sourced finding → verification for a single section). The MVP remains the full **URL-in → automated audit-out** product (auto-detection of brand/what-it-sells/industry/business-model/market-geography/competitors + full-coverage generation); the spike does not narrow that goal. See [`SPIKE_PLAN.md`](./SPIKE_PLAN.md).
+
 **Goal:** Prove the evidence loop on **one real URL** before building infrastructure.
 - Take one real URL → run **one** crawl + tech/tag detection → generate **one** section (e.g. Analytics & Tracking) with the generate+verify passes.
 - **Measure:** can claims be genuinely sourced? latency? cost?

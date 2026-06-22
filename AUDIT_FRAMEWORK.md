@@ -67,10 +67,10 @@ Per-section minimums are defined in [`DECISIONS.md`](./DECISIONS.md) D9. Global 
 
 ### 2. Client Introduction `[MVP]`
 - **Purpose:** Establish identity and context.
-- **Answers:** What does the brand say it is? Value proposition, positioning, products/services, target audience, geography, maturity.
-- **Signals/sources:** Homepage, about page, product pages, footer, meta tags.
-- **Output:** Brand profile + detected positioning.
-- **Uncertainty:** Distinguish brand's *self-description* (observed) from our *assessment* (inference).
+- **Answers:** What does the brand say it is? Value proposition, positioning, **what it sells** (products/services), target audience, **likely market/geography**, maturity.
+- **Signals/sources:** Homepage, about page, product pages, footer, meta tags; geography signals (currency/locale, language, shipping/contact regions, ccTLD, `hreflang`).
+- **Output:** Brand profile + detected positioning + detected market/geography (with confidence + evidence; from the detection contract — see [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) §4 and [`PROMPTS.md`](./PROMPTS.md) §3).
+- **Uncertainty:** Distinguish brand's *self-description* (observed) from our *assessment* (inference). Market/geography is an inference from observable signals unless explicitly stated by the brand — never assert a market without a signal.
 
 ### 3. Business Model & Strategy `[MVP]`
 - **Purpose:** Understand how value is created, delivered, and captured.
@@ -89,10 +89,14 @@ Per-section minimums are defined in [`DECISIONS.md`](./DECISIONS.md) D9. Global 
 ### 5. Competitive Benchmark `[Deferred]`
 - **Purpose:** Understand the competitive set and relative position.
 - **MVP note:** competitor *names* may be auto-detected, but the comparative benchmark needs competitor data sources (deferred per [`DECISIONS.md`](./DECISIONS.md) D1/D6).
-- **Answers:** Who are the direct/adjacent competitors? How do they compare on positioning, offer, digital presence?
-- **Signals/sources:** Auto-detected competitors, SERP overlap, category knowledge, competitor sites.
-- **Output:** Competitor table + comparative read + whitespace/opportunities.
-- **Uncertainty:** Mark inferred competitors vs. confirmed; note any competitor not verifiable.
+- **Answers:** Who are the **direct**, **indirect**, and **aspirational** competitors? How do they compare on positioning, offer, digital presence?
+- **Competitor relationship types:**
+  - **Direct** — same offer, same segment.
+  - **Indirect** — a different offer that solves the same customer need.
+  - **Aspirational** — a larger/benchmark brand the client likely aims toward (useful for positioning and growth framing).
+- **Signals/sources:** Auto-detected competitors (from the detection contract), SERP overlap, category knowledge, competitor sites.
+- **Output:** Competitor table (typed by relationship) + comparative read + whitespace/opportunities.
+- **Uncertainty:** Mark inferred competitors vs. confirmed; note any competitor not verifiable. Aspirational competitors are inherently inferential and must be marked as such.
 
 ### 6. Customer Journey `[Deferred]`
 - **Purpose:** Map how a prospect becomes (and stays) a customer.
@@ -198,7 +202,7 @@ The full long-term rubric (for reference when it returns):
 ## Methodology summary
 
 1. **Observe** signals from approved sources → store as evidence with citations.
-2. **Classify & infer** brand/industry/model/competitors, attaching confidence.
+2. **Classify & infer** brand, what it sells, industry, business model, market/geography, and competitors (direct/indirect/aspirational), attaching confidence.
 3. **Generate** each section against its contract, never exceeding the evidence.
 4. **Verify** — a critique pass checks for unsourced claims, fabricated numbers, and unmarked uncertainty.
 5. **Score & synthesize** — scorecard and executive summary built only from sourced findings.

@@ -59,11 +59,13 @@ Understanding a new client is slow, manual, and inconsistent. Analysts stitch to
 
 ### Core flow
 1. **Input** — User pastes a company/brand URL.
-2. **Auto-detection** — The system automatically detects:
+2. **Auto-detection** — From the single URL, the system automatically detects the full contract below (each with a confidence level and supporting evidence):
    - **Brand / company identity** (name, tagline, value proposition)
+   - **What it sells** (products/services offered)
    - **Industry / category**
    - **Business model** (e.g. DTC e-commerce, B2B SaaS, marketplace, services, retail)
-   - **Competitors** (direct and adjacent)
+   - **Likely market / geography** (primary markets, inferred from observable signals — currency/locale, language, shipping/contact regions, ccTLD, `hreflang`)
+   - **Competitors** — **direct** (same offer/segment), **indirect** (different offer, same need), and **aspirational** (larger benchmark brands the client likely aims toward)
 3. **Targeted clarification (only when necessary)** — If a critical ambiguity blocks a high-quality audit (e.g. the URL serves multiple brands, or the business model is genuinely unclear), the system asks a **minimal** set of clarifying questions. If confidence is sufficient, it asks nothing and proceeds.
 4. **Research & evidence gathering** — The system collects observable signals (site content, tech/tags, ads transparency, SERP presence, social, etc.), attaching a **source** to each.
 5. **Audit generation** — The 13-section audit (see [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md)) is generated, with confidence levels and citations.
@@ -92,7 +94,7 @@ These map directly to the build rules and prompt rules.
 Accept a URL, normalize it, validate reachability, and capture the canonical site.
 
 ### FR-2 — Auto-detection engine
-Detect brand identity, industry, business model, and a competitor set from observable signals. Output detection results **with confidence levels**.
+Detect brand identity, what it sells, industry, business model, likely market/geography, and a competitor set (direct / indirect / aspirational) from observable signals. Output detection results **with confidence levels** and supporting evidence.
 
 ### FR-3 — Clarifying-question engine (conditional)
 Trigger questions only when a confidence threshold for a critical dimension is not met. Keep them minimal and high-leverage.

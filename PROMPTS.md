@@ -68,17 +68,21 @@ so-what, attach a confidence level. Prefer "Unverified / none found" over a gues
 ## 3. Detection prompt (template)
 
 **Input:** target URL, fetched site evidence, tech/tag detection, optional SERP signals.
+
+From a single URL, detection must produce the full auto-detection contract (see [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) §4): **brand**, **what it sells**, **industry/category**, **business model**, **likely market/geography**, and **competitors (direct / indirect / aspirational)**.
+
 **Output (structured):**
 ```json
 {
-  "brand": { "name": "", "value_proposition": "", "confidence": "High|Medium|Low|Unverified", "evidence_ids": [] },
+  "brand": { "name": "", "value_proposition": "", "what_it_sells": "", "confidence": "High|Medium|Low|Unverified", "evidence_ids": [] },
   "industry": { "category": "", "confidence": "", "evidence_ids": [] },
   "business_model": { "type": "", "rationale": "", "confidence": "", "evidence_ids": [] },
-  "competitors": [ { "name": "", "type": "direct|adjacent", "confidence": "", "evidence_ids": [] } ],
+  "market_geography": { "primary_markets": [ "" ], "basis": "", "confidence": "High|Medium|Low|Unverified", "evidence_ids": [] },
+  "competitors": [ { "name": "", "relationship": "direct|indirect|aspirational", "confidence": "", "evidence_ids": [] } ],
   "blocking_ambiguities": [ "" ]
 }
 ```
-**Instruction highlights:** classify only from provided evidence; attach evidence ids; if a dimension can't be determined, return `Unverified` and list it under `blocking_ambiguities`.
+**Instruction highlights:** classify only from provided evidence; attach evidence ids; if a dimension can't be determined, return `Unverified` and list it under `blocking_ambiguities`. For `market_geography`, infer from observable signals only (e.g. currency/locale, language, shipping/contact regions, ccTLD, `hreflang`) and state the `basis`; never assert a market without a signal. For competitors, classify `relationship` as **direct** (same offer/segment), **indirect** (different offer solving the same need), or **aspirational** (a larger/benchmark brand the client likely aims toward) — and mark inferred vs. confirmed.
 
 ---
 
