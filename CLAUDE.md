@@ -45,7 +45,7 @@ Next.js (App Router) · TypeScript · Tailwind · shadcn/ui-style components · 
 4. `npm run dev` → http://localhost:3000 · sign up at `/login` · paste a URL.
 5. `npm run build` / `npm run typecheck` / `npm run lint` for checks.
 
-**Pipeline:** `lib/audit/orchestrator.ts` runs detect → gather_evidence → generate → persist. Evidence collectors live in `lib/evidence/collectors/` (static + GTM container are real; `renderedNetwork.ts` is a stub until Phase 1.1). Only `digital_audit_analytics_tracking` generates real content in PR1; other sections are locked placeholders. No numeric scorecard (D7).
+**Pipeline:** `lib/audit/orchestrator.ts` runs detect → gather_evidence → generate → persist. Evidence collectors live in `lib/evidence/collectors/`: static HTML, GTM container, and (Phase 1.1) **real headless `renderedNetwork`** capture via `playwright-core` + `@sparticuz/chromium`, gated by `ANALYTICS_RENDER_ENABLED`. If render is disabled or fails, it degrades gracefully — runtime-only tags stay `Unknown/Unverified`, **never reported as absent**. Only `digital_audit_analytics_tracking` generates real content; other sections are locked placeholders. No numeric scorecard (D7).
 
 ## When you build (future)
 - Keep the LLM structured-output schemas in sync with [`DATA_MODEL.md`](./DATA_MODEL.md) and [`PROMPTS.md`](./PROMPTS.md).
