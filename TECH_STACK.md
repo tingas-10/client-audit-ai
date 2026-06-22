@@ -70,6 +70,19 @@
 
 **Compliance rules (still binding):** respect `robots.txt`/ToS, rate-limit our crawl, store provenance, mark blocked/unavailable sources as `Unverified`.
 
+### 3a. Analytics & Tracking evidence layer (validated by the Phase 0.75 spike)
+
+> **Lesson from [`SPIKE_RESULTS.md`](./SPIKE_RESULTS.md): static HTML alone is insufficient and actively misleading for Analytics & Tracking** — a static-only pass produced two false negatives (Meta, TikTok) and one wrong inference (Consent Mode), all corrected only by a rendered network-capture pass. The Analytics & Tracking evidence layer therefore **requires all of the following**, used together:
+
+1. **Static HTML fetch** — fast/cheap; captures GTM container id, hardcoded tags (e.g. Hotjar/Clarity), metadata, CMS/platform, geography. Good first pass, never the only pass.
+2. **GTM container introspection** — fetch the public `googletagmanager.com/gtm.js?id=GTM-XXXX` to read configured tags (revealed the Google Ads tag and confirmed which tools are *not* container-managed). Complements, does not replace, the rendered pass.
+3. **Headless / rendered browser check** — execute the page (headless Chromium) so GTM and JS fully run and runtime-injected tags actually fire.
+4. **Runtime network capture** — capture the page's network requests (e.g. Chromium net-log) to observe what truly fires (GA4 `collect`, Ads conversion, Meta `fbevents`, TikTok pixel, etc.).
+5. **Vendor-endpoint filtering** — convert raw captured requests into clean evidence via an **allowlist of known vendor endpoints + ID-pattern extraction** (e.g. `G-`, `AW-`, Meta `/signals/config/<id>`, TikTok `sdkid`), with **site-attribution checks** (`domain=<target>` / first-party correlation).
+6. **Browser-noise filtering** — exclude the browser's own background traffic (safebrowsing, component/update, web-store, GCM) and **substring false positives** (the spike rejected VWO/VTEX/Civic/MS-Ads noise this way).
+
+**Confidence rule:** a tag is `observed`/confirmed only when a runtime or container method sees it; static absence yields `unknown/unverified`, never "absent" (see [`PROMPTS.md`](./PROMPTS.md) and [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) §7.4). The rendered step is the slowest but fits the D2 latency envelope (~5–9s in the spike).
+
 ---
 
 ## 4. LLM orchestration
