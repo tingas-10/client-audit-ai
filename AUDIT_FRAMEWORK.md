@@ -1,0 +1,180 @@
+# Client Audit AI — Audit Framework
+
+> **Status:** Draft v0.1
+> **Purpose:** The methodology behind the audit. This is the product's intellectual core: *what* we assess, *how*, *from which signals*, and *how we handle sourcing and uncertainty*.
+> **Related:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`PROMPTS.md`](./PROMPTS.md) · [`DATA_MODEL.md`](./DATA_MODEL.md)
+
+---
+
+## 0. Cross-cutting conventions
+
+These apply to **every** section. They are the difference between a credible audit and a hallucination.
+
+### 0.1 Claim types
+- **Observed fact** — directly verifiable from a source (e.g. "site loads a Meta Pixel" → tag detected). Must cite the source.
+- **Inference** — a reasoned conclusion from observed facts (e.g. "likely DTC model based on cart + checkout + no reseller language"). Must state the basis and a confidence level.
+- **Assumption** — a working hypothesis when evidence is thin. Must be labeled as an assumption and surfaced in Open Questions.
+
+> **Hard rule:** Never present an inference or assumption as an observed fact. Never invent a metric. If a number is not observable or provided, do not state it.
+
+### 0.2 Confidence levels
+| Level | Meaning |
+|---|---|
+| **High** | Directly observed or corroborated by multiple sources. |
+| **Medium** | Reasoned inference from solid observed signals. |
+| **Low** | Plausible but weakly supported; treat as hypothesis. |
+| **Unverified** | Could not be checked (source unavailable, blocked, out of scope). |
+
+### 0.3 Sourcing
+Every researched claim carries one or more **citations** (see `sources` / `evidence` in [`DATA_MODEL.md`](./DATA_MODEL.md)). A citation records: source type, locator (URL/tool), what was observed, and timestamp. Sections render an inline confidence badge and a sources list.
+
+### 0.4 Uncertainty handling
+When uncertain, the audit explicitly says so and routes the unknown into **Section 13 (Open Questions / Information Needed)**. Silence is never used to hide a gap.
+
+### 0.5 Section output contract
+Each section produces:
+- A short **summary** (decision-ready).
+- A **detailed body** (findings, structured).
+- A list of **citations**.
+- A list of **assumptions / uncertainties**.
+- (Where applicable) **opportunities** and **risks** tagged for the scorecard and risk register.
+
+---
+
+## The 13-Section Audit Model
+
+### 1. Executive Summary
+- **Purpose:** The senior synthesis — what this company is, how it makes money, where the biggest opportunities and risks are, and the headline scorecard. Written last, read first.
+- **Answers:** Who is this client? What matters most? Where would we focus?
+- **Inputs:** Synthesized from all other sections.
+- **Output:** 1-page narrative + top 3–5 opportunities + top 3–5 risks + headline score.
+- **Sourcing rule:** No new claims here — only synthesis of already-sourced findings.
+
+### 2. Client Introduction
+- **Purpose:** Establish identity and context.
+- **Answers:** What does the brand say it is? Value proposition, positioning, products/services, target audience, geography, maturity.
+- **Signals/sources:** Homepage, about page, product pages, footer, meta tags.
+- **Output:** Brand profile + detected positioning.
+- **Uncertainty:** Distinguish brand's *self-description* (observed) from our *assessment* (inference).
+
+### 3. Business Model & Strategy
+- **Purpose:** Understand how value is created, delivered, and captured.
+- **Answers:** Revenue model, pricing, monetization, channels, key segments, apparent strategic priorities.
+- **Signals/sources:** Pricing pages, checkout/cart, plans, partner/reseller pages, careers (hiring signals), public statements.
+- **Output:** Business-model classification (with confidence) + strategic read.
+- **Uncertainty:** Internal economics (margins, CAC, LTV) are **not observable** — never fabricate; route to Open Questions.
+
+### 4. Industry Context
+- **Purpose:** Situate the client in its market.
+- **Answers:** Category definition, market dynamics, trends, regulatory notes, typical KPIs for the category.
+- **Signals/sources:** Industry references, reputable public reporting (cited), category norms.
+- **Output:** Concise industry brief relevant to *this* client.
+- **Sourcing rule:** Market figures must be cited to a real source or omitted; never invent market sizes.
+
+### 5. Competitive Benchmark
+- **Purpose:** Understand the competitive set and relative position.
+- **Answers:** Who are the direct/adjacent competitors? How do they compare on positioning, offer, digital presence?
+- **Signals/sources:** Auto-detected competitors, SERP overlap, category knowledge, competitor sites.
+- **Output:** Competitor table + comparative read + whitespace/opportunities.
+- **Uncertainty:** Mark inferred competitors vs. confirmed; note any competitor not verifiable.
+
+### 6. Customer Journey
+- **Purpose:** Map how a prospect becomes (and stays) a customer.
+- **Answers:** Awareness → consideration → conversion → retention → advocacy; touchpoints and gaps.
+- **Signals/sources:** Site funnel, content, CTAs, email/CRM signals, social, retargeting presence.
+- **Output:** Journey map with observed touchpoints, friction points, and gaps.
+
+### 7. Digital Audit
+The most operational section. Each sub-area carries its own findings, sourcing, and opportunities.
+
+#### 7.1 Paid Media
+- **Media** — Which paid channels are detectably in use (ads transparency libraries, tracking tags, retargeting). What platforms, apparent activity.
+- **Creatives & Communication** — Observed ad creatives/messaging (where publicly available via ad libraries), tone, offers, formats.
+- **Opportunities** — Gaps and upside in channel mix, creative, targeting (as diagnosis, sourced/flagged).
+
+#### 7.2 Owned Media
+- **Website** — Structure, UX, performance signals, content quality, conversion elements.
+- **Communication & Creatives** — On-site messaging, brand voice, visual system consistency.
+- **CRM / Email / WhatsApp / Push** — Detectable lifecycle/messaging infrastructure (signup flows, email vendor tags, WhatsApp/chat widgets, push/web-push prompts).
+- **Opportunities** — Owned-channel upside.
+
+#### 7.3 SEO
+- **Purpose:** Organic visibility and technical/content health.
+- **Signals/sources:** Indexability, metadata, structure, content depth, SERP presence, backlinks (cited tools where available).
+- **Output:** SEO diagnosis + prioritized opportunities.
+
+#### 7.4 Analytics & Tracking
+- **Pixels / Tags** — Detected analytics/marketing tags (e.g. GA4, Meta Pixel, GTM, TikTok, LinkedIn, etc.) via tag detection.
+- **Measurement** — How measurement appears to be set up; gaps in coverage.
+- **Events** — Detectable event/conversion tracking signals.
+- **Attribution Risks** — Risks to data quality/attribution (cookie/consent setup, duplicate tags, missing server-side, privacy changes). **This feeds the Risks & Alerts section.**
+
+#### 7.5 Social & Content
+- **Purpose:** Social presence and content strategy read.
+- **Signals/sources:** Linked social profiles, posting cadence/quality (observed), content themes.
+- **Output:** Social/content diagnosis + opportunities.
+
+#### 7.6 CRO (Conversion Rate Optimization)
+- **Purpose:** Conversion experience quality.
+- **Signals/sources:** Funnel friction, forms, page speed, trust elements, mobile experience, checkout/lead flow.
+- **Output:** CRO diagnosis + prioritized hypotheses (framed as hypotheses, not guaranteed lifts).
+
+### 8. Brand & Creative Diagnosis
+- **Purpose:** Assess brand strength and creative quality.
+- **Answers:** Clarity of positioning, distinctiveness, consistency, messaging quality, visual identity.
+- **Signals/sources:** Site, social, ad creatives, brand assets.
+- **Output:** Brand/creative assessment (qualitative, clearly framed as expert judgment, not fabricated metrics).
+
+### 9. Growth Diagnosis
+- **Growth Model** — How the business appears to grow (acquisition-led, retention-led, virality, sales-led, etc.) based on observed signals.
+- **Loop Opportunities** — Specific growth-loop opportunities relevant to this model.
+- **Successful loop case studies from companies in the same industry** — Real, **sourced** examples of growth loops from companies in the *same industry/category*. These must be real and cited; if none can be sourced confidently, say so rather than inventing examples.
+- **Output:** Growth read + loop opportunities + sourced case studies (or explicit "none verified").
+
+### 10. AI Readiness
+- **Purpose:** Assess how prepared the client is to leverage AI (in marketing, product, ops) and where AI could create leverage.
+- **Answers:** Observable AI usage (chatbots, AI features, content), data/tracking maturity (ties to 7.4), opportunities for AI-driven growth/efficiency.
+- **Output:** AI readiness read + concrete AI opportunities, with maturity framed honestly.
+
+### 11. Risks & Alerts
+- **Purpose:** Consolidated risk register.
+- **Inputs:** Pulls especially from Attribution Risks (7.4), plus brand, competitive, compliance, dependency, and measurement risks surfaced anywhere.
+- **Output:** Prioritized risk list (severity × likelihood) with rationale and source/confidence per risk.
+
+### 12. Final Scorecard
+- **Purpose:** A transparent, weighted snapshot of the client's current state.
+- **Scoring rubric:** Each dimension scored **1–5** with explicit criteria and a one-line rationale + confidence.
+
+| Dimension | What it measures |
+|---|---|
+| Business Model Clarity | Clarity & resilience of how value is captured |
+| Competitive Position | Strength vs. competitive set |
+| Customer Journey | Completeness & friction of the journey |
+| Paid Media | Maturity & efficiency signals of paid |
+| Owned Media | Strength of owned channels & lifecycle |
+| SEO | Organic visibility & health |
+| Analytics & Tracking | Measurement quality & data trust |
+| Social & Content | Presence & content strategy |
+| CRO | Conversion experience quality |
+| Brand & Creative | Brand strength & creative quality |
+| Growth | Growth model & loop potential |
+| AI Readiness | Preparedness to leverage AI |
+
+- **Weighting:** Configurable; default weights documented when MVP scoring is implemented.
+- **Output:** Per-dimension score + weighted total + confidence note. Scores must reflect *evidence strength* — low-evidence dimensions are flagged, not guessed.
+
+### 13. Open Questions / Information Needed To Go Deeper
+- **Purpose:** Make the unknowns explicit and actionable.
+- **Content:** Every assumption, Unverified claim, and blocked data point collected across sections, plus the specific data that would resolve each (e.g. "access to GA4", "ad account spend", "actual pricing tiers").
+- **Output:** Prioritized list of what to ask the client / what to access next.
+
+---
+
+## Methodology summary
+
+1. **Observe** signals from approved sources → store as evidence with citations.
+2. **Classify & infer** brand/industry/model/competitors, attaching confidence.
+3. **Generate** each section against its contract, never exceeding the evidence.
+4. **Verify** — a critique pass checks for unsourced claims, fabricated numbers, and unmarked uncertainty.
+5. **Score & synthesize** — scorecard and executive summary built only from sourced findings.
+6. **Surface gaps** — everything unknown lands in Open Questions.
