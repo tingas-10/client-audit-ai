@@ -154,10 +154,18 @@ A specific observed signal, used to back claims.
 | source_id | uuid (fk) | |
 | audit_id | uuid (fk) | denormalized for query convenience |
 | observation | text | what was observed (e.g. "Meta Pixel tag present") |
-| raw | jsonb | structured detail / snippet |
-| captured_at | timestamptz | |
+| **detection_method** | detection_method (enum) | **how it was observed: `static_html \| gtm_container \| runtime_network \| manual`** (validated by the Phase 0.75 spike — see [`SPIKE_RESULTS.md`](./SPIKE_RESULTS.md)) |
+| **vendor** | text | normalized vendor key, e.g. `ga4`, `google_ads`, `meta_pixel`, `tiktok_pixel`, `hotjar`, `clarity`, `consent_mode`, `gtm`, `salesforce` (nullable for non-tag evidence) |
+| **tag_id** | text | observed tag/property/pixel id, e.g. `G-KHZNC1Q6K0`, `AW-745683998`, `1137902637924441` (nullable) |
+| **source_url** | text | canonical source the evidence came from (page or tool URL) |
+| **page_url** | text | the page being audited when observed (nullable for tool/container evidence) |
+| **request_url** | text | for `runtime_network` evidence: the captured request URL (nullable otherwise) |
+| **raw_evidence_snippet** | text | the raw observed snippet/string (replaces the earlier free-form `raw`; keep `raw` jsonb optionally for structured detail) |
+| raw | jsonb | optional structured detail |
+| **confidence** | confidence_level (enum) | `high \| medium \| low \| unverified` (evidence-level strength) |
+| captured_at | timestamptz | provenance timestamp |
 
-> Findings reference `evidence.id` values in `audit_sections.content.findings[].evidence_ids`. This is the sourcing backbone.
+> Findings reference `evidence.id` via the `finding_evidence` join (D12). This is the sourcing backbone. For Analytics & Tracking, `detection_method` distinguishes statically-observed signals from runtime/container-confirmed ones, and drives the confidence rules in [`PROMPTS.md`](./PROMPTS.md) and [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) §7.4.
 
 ### `competitors`
 | field | type | notes |
@@ -234,6 +242,7 @@ Deferred keys (Phase 2+), same convention: `industry_context`, `competitive_benc
 - `confidence_level`: `high | medium | low | unverified`
 - `claim_type`: `observed_fact | inference | assumption`
 - `competitor_relationship`: `direct | indirect | aspirational`
+- `detection_method`: `static_html | gtm_container | runtime_network | manual` (evidence provenance — Phase 0.75)
 - `audit_status`, `job_step`, `job_status`, `section_key`
 
 ## 4. Row-Level Security (RLS)

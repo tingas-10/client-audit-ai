@@ -130,6 +130,15 @@ The most operational section. Each sub-area carries its own findings, sourcing, 
 - **Events** — Detectable event/conversion tracking signals.
 - **Attribution Risks** — Risks to data quality/attribution (cookie/consent setup, duplicate tags, missing server-side, privacy changes). **This feeds the Risks & Alerts section.**
 
+**Methodology — multi-pass (validated by the Phase 0.75 spike; see [`SPIKE_RESULTS.md`](./SPIKE_RESULTS.md)).** Static HTML alone is insufficient and misleading here, so the section is built from **four passes plus filtering**, each finding tagged with its `detection_method`:
+1. **Static pass** (`static_html`) — GTM container id, hardcoded tags, metadata, platform, geography. Fast, but never the sole basis; tags not seen here are **Unknown**, not absent.
+2. **GTM container pass** (`gtm_container`) — read the public `gtm.js?id=GTM-XXXX` to list configured tags and identify which tools are/aren't container-managed.
+3. **Runtime / network pass** (`runtime_network`) — render the page headless and capture network requests to confirm what actually fires (GA4 `collect`, Ads conversion, Meta `fbevents`, TikTok pixel, Consent Mode `gcs/gcd`, etc.).
+4. **Final verification pass** — reconcile passes; **promote Unknown → Observed** only when a runtime/container method confirms; only assert a tag is **absent** when runtime capture confirms absence.
+5. **False-positive filtering** — drop browser-background traffic (safebrowsing, updates, web-store, GCM) and substring matches; require a real vendor hostname + site attribution before recording a vendor (the spike rejected VWO/VTEX/Civic/MS-Ads noise this way).
+
+> Confidence: a tag is `Observed` only via `gtm_container` or `runtime_network`; `static_html` absence is `Unknown/Unverified`. See [`PROMPTS.md`](./PROMPTS.md) Analytics & Tracking rules.
+
 #### 7.5 Social & Content `[Deferred]`
 - **Purpose:** Social presence and content strategy read.
 - **Signals/sources:** Linked social profiles, posting cadence/quality (observed), content themes.

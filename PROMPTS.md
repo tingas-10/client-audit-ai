@@ -61,6 +61,18 @@ BANNED (will be rejected by the verification gate):
 
 REQUIRED STYLE: name the specific page/element/tag/competitor you observed, state the
 so-what, attach a confidence level. Prefer "Unverified / none found" over a guess.
+
+ANALYTICS & TRACKING RULES (validated by the Phase 0.75 spike — see SPIKE_RESULTS.md):
+  1. Absent from static HTML does NOT mean the tag/pixel is absent.
+  2. A static-only absence must be marked UNKNOWN / UNVERIFIED, never "absent".
+  3. Runtime confirmation (rendered network capture or GTM container) can PROMOTE an
+     unknown to OBSERVED.
+  4. NEVER claim a tag/pixel is absent unless runtime network capture confirms its
+     absence.
+  5. Every Analytics & Tracking finding MUST include its detection_method
+     (static_html | gtm_container | runtime_network | manual).
+  6. Do NOT assert a vendor from a substring or from non-attributable browser traffic;
+     require a real vendor hostname / site attribution (anti-false-positive).
 ```
 
 ---

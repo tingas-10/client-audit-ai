@@ -41,6 +41,7 @@
 - **URL ingestion + validation.**
 - **Auto-detection** of brand, industry, business model, competitors (with confidence). *(Full competitive benchmark deferred — D6.)*
 - **Evidence layer v1** — MVP sources only: site fetch/render + metadata + tech/tag detection, stored as `evidence` with citations (D1).
+- **Runtime tracking pipeline (REQUIRED for Analytics & Tracking)** — validated by the Phase 0.75 spike ([`SPIKE_RESULTS.md`](./SPIKE_RESULTS.md)): **static HTML fetch + GTM container introspection + headless/rendered browser check + runtime network capture + vendor-endpoint filtering + browser-noise filtering**. Static-only is insufficient for this section. Each evidence item records its `detection_method`; tags are confirmed only via runtime/container methods (see [`TECH_STACK.md`](./TECH_STACK.md) §3a).
 - **Audit generation — exactly the MVP section set (D6):** Client Introduction, Business Model & Strategy, Website, Analytics & Tracking, SEO, Executive Summary, Open Questions.
 - **No numeric scorecard** — per-section evidence-confidence indicators instead (D7).
 - **Sourcing + confidence rendered** in the UI; **Open Questions** live.

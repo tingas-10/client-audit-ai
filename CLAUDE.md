@@ -24,6 +24,7 @@
 - **No numeric scorecard in MVP** (confidence indicators instead); returns Phase 2.
 - **Growth/case studies deferred**; later = loop *hypotheses*; cited case studies only with web-search grounding.
 - **Anti-generic rule:** every insight must be evidence-backed, a sourced comparison, or a clearly marked inference — never generic advice.
+- **Analytics & Tracking must never rely only on static HTML** (Phase 0.75 spike — [`SPIKE_RESULTS.md`](./SPIKE_RESULTS.md)). It requires static fetch **+ GTM container introspection + headless/rendered runtime network capture**, with vendor-endpoint and browser-noise filtering. Static absence = `Unknown/Unverified`, never "absent"; tags are confirmed only via runtime/container methods. Every such finding records its `detection_method`.
 
 ## Non-negotiable rules (these define the product)
 1. **Do not invent data.** Never fabricate metrics, numbers, names, or dates.
