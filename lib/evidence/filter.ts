@@ -1,5 +1,10 @@
 import type { EvidenceItem } from "@/lib/audit/types";
-import { VENDORS, isBrowserNoiseHost } from "@/lib/evidence/vendors";
+import {
+  VENDORS,
+  CMP_VENDORS,
+  CONSENT_MODE_PARAM_RE,
+  isBrowserNoiseHost,
+} from "@/lib/evidence/vendors";
 
 export interface CapturedRequest {
   url: string;
@@ -34,36 +39,52 @@ export function classifyNetworkRequests(
   const items: EvidenceItem[] = [];
   let counter = 0;
 
+  const add = (
+    vendorKey: string,
+    label: string,
+    tagId: string | undefined,
+    req: CapturedRequest,
+  ): void => {
+    const dedupeKey = `${vendorKey}:${tagId ?? hostOf(req.url)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    counter += 1;
+    items.push({
+      refId: `ev_r${counter}`,
+      observation: `${label} confirmed at runtime${tagId ? ` (${tagId})` : ""}`,
+      detectionMethod: "runtime_network",
+      vendor: vendorKey,
+      tagId,
+      sourceUrl: req.url,
+      pageUrl: req.pageUrl,
+      requestUrl: req.url,
+      confidence: "high",
+      capturedAt: now,
+    });
+  };
+
+  const allVendors = [...VENDORS, ...CMP_VENDORS];
+
   for (const req of requests) {
     const host = hostOf(req.url);
     if (!host || isBrowserNoiseHost(host)) continue;
 
-    for (const vendor of VENDORS) {
+    // Vendor (analytics/ads/pixels/CMP) match by known host only.
+    for (const vendor of allVendors) {
       if (!vendor.runtimeHosts) continue;
       const matchHost = vendor.runtimeHosts.some(
-        (h) => host === h || host.endsWith(`.${h}`) || req.url.includes(h),
+        (h) => host === h || host.endsWith(`.${h}`),
       );
       if (!matchHost) continue;
-
-      const tagId = vendor.idFromRequest?.(req.url);
-      const dedupeKey = `${vendor.key}:${tagId ?? host}`;
-      if (seen.has(dedupeKey)) break;
-      seen.add(dedupeKey);
-
-      counter += 1;
-      items.push({
-        refId: `ev_r${counter}`,
-        observation: `${vendor.label} fired at runtime${tagId ? ` (${tagId})` : ""}`,
-        detectionMethod: "runtime_network",
-        vendor: vendor.key,
-        tagId,
-        sourceUrl: req.url,
-        pageUrl: req.pageUrl,
-        requestUrl: req.url,
-        confidence: "high",
-        capturedAt: now,
-      });
+      add(vendor.key, vendor.label, vendor.idFromRequest?.(req.url), req);
       break;
+    }
+
+    // Google Consent Mode is a request PARAMETER (gcs/gcd), not a host. A GA/Ads
+    // request carrying it confirms Consent Mode is active.
+    const consent = req.url.match(CONSENT_MODE_PARAM_RE);
+    if (consent) {
+      add("consent_mode", "Google Consent Mode", consent[2], req);
     }
   }
 

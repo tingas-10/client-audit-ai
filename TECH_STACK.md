@@ -83,6 +83,8 @@
 
 **Confidence rule:** a tag is `observed`/confirmed only when a runtime or container method sees it; static absence yields `unknown/unverified`, never "absent" (see [`PROMPTS.md`](./PROMPTS.md) and [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) §7.4). The rendered step is the slowest but fits the D2 latency envelope (~5–9s in the spike).
 
+**Implementation (Phase 1.1):** `renderedNetwork` is implemented with **`playwright-core` + `@sparticuz/chromium`** (system Chrome locally; serverless Chromium on Vercel via `outputFileTracingIncludes`). It is **flag-gated** by `ANALYTICS_RENDER_ENABLED` and bounded by `RENDER_TIMEOUT_MS`. On disable/failure/timeout it returns `captured:false` so runtime-only tags stay `Unknown` (never "absent") — the only signal that authorises asserting a tag is absent is `captured:true`. Detects GA4, Google Ads, Meta, TikTok, LinkedIn, Microsoft Ads (UET), Hotjar, Clarity, **Google Consent Mode** (`gcs`/`gcd` params), **CMP vendors**, and Salesforce/chat. Note: consent-gated tags (e.g. GA4 behind an unclicked consent banner) may not fire in an unattended headless load and correctly remain `Unknown` — consent-accept interaction is a future enhancement.
+
 ---
 
 ## 4. LLM orchestration

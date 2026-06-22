@@ -34,7 +34,8 @@
 ---
 
 ## Phase 1 — MVP: thin end-to-end slice  🚧 in progress
-> **PR1 scaffold landed:** Next.js/TS/Tailwind + Supabase schema/RLS + auth + the evidence→detection→generate→verify pipeline + sourced report UI. **Analytics & Tracking** is the only fully generated section; headless runtime capture (`renderedNetwork`) and the other six sections are the next increments (Phase 1.1+).
+> **PR1 scaffold landed:** Next.js/TS/Tailwind + Supabase schema/RLS + auth + the evidence→detection→generate→verify pipeline + sourced report UI. **Analytics & Tracking** is the only fully generated section.
+> **Phase 1.1 landed:** real headless `renderedNetwork` capture (playwright-core + @sparticuz/chromium), flag-gated, with vendor/Consent-Mode/CMP/Salesforce detection and graceful fallback. Remaining increments: the other six sections, then the durable workflow runner.
 
 **Goal:** URL in → a real, sourced, readable audit of the **MVP section set** out.
 - Next.js + TypeScript + Tailwind + shadcn/ui scaffold; Supabase project + schema + RLS; Vercel deploy.

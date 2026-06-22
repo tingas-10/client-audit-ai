@@ -65,6 +65,13 @@ export const VENDORS: VendorSignature[] = [
     runtimeHosts: ["px.ads.linkedin.com", "snap.licdn.com"],
   },
   {
+    key: "microsoft_ads",
+    label: "Microsoft Ads (UET)",
+    // bat.bing.com is the UET beacon; plain bing.com/c.bing.com is NOT UET.
+    runtimeHosts: ["bat.bing.com"],
+    idFromRequest: (u) => u.match(/[?&]ti=([0-9]+)/)?.[1],
+  },
+  {
     key: "hotjar",
     label: "Hotjar",
     staticPatterns: [/hjid:\s*([0-9]+)/],
@@ -76,7 +83,33 @@ export const VENDORS: VendorSignature[] = [
     staticPatterns: [/"clarity",\s*"script",\s*"([a-z0-9]+)"/],
     runtimeHosts: ["clarity.ms"],
   },
+  {
+    key: "salesforce",
+    label: "Salesforce (Service Cloud / chat)",
+    runtimeHosts: ["salesforce.com", "salesforce-scrt.com", "force.com"],
+  },
 ];
+
+/**
+ * CMP (consent-management platform) vendor signatures — detected by host at
+ * runtime. Distinct from Google Consent Mode (a request-parameter signal, see
+ * CONSENT_MODE_PARAMS below).
+ */
+export const CMP_VENDORS: VendorSignature[] = [
+  { key: "cookiebot", label: "Cookiebot (CMP)", runtimeHosts: ["cookiebot.com", "consentcdn.cookiebot.com"] },
+  { key: "onetrust", label: "OneTrust (CMP)", runtimeHosts: ["onetrust.com", "cookielaw.org", "cdn.cookielaw.org"] },
+  { key: "didomi", label: "Didomi (CMP)", runtimeHosts: ["didomi.io", "sdk.privacy-center.org"] },
+  { key: "usercentrics", label: "Usercentrics (CMP)", runtimeHosts: ["usercentrics.eu", "app.usercentrics.eu"] },
+  { key: "cookieyes", label: "CookieYes (CMP)", runtimeHosts: ["cookieyes.com"] },
+];
+
+/**
+ * Google Consent Mode is signalled by the `gcs`/`gcd` query parameters on GA4 /
+ * Google Ads requests — not by a host. We classify these separately so a
+ * request to google-analytics.com both confirms GA4 AND, if it carries gcs=,
+ * confirms Consent Mode is active. (SPIKE_RESULTS.md.)
+ */
+export const CONSENT_MODE_PARAM_RE = /[?&](gcs|gcd)=([A-Za-z0-9._-]+)/;
 
 /**
  * Hosts that are the browser's own background traffic — never the audited site.
