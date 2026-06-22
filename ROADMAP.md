@@ -1,8 +1,8 @@
 # Client Audit AI — Roadmap
 
-> **Status:** Draft v0.1
+> **Status:** Draft v0.2 (updated for Phase 0.5 decisions)
 > **Purpose:** Phased delivery plan from documentation to a scalable product.
-> **Related:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`TECH_STACK.md`](./TECH_STACK.md)
+> **Related:** [`DECISIONS.md`](./DECISIONS.md) (source of truth) · [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`TECH_STACK.md`](./TECH_STACK.md)
 
 ---
 
@@ -13,35 +13,50 @@
 
 ---
 
-## Phase 0 — Documentation foundation ✅ (this PR)
-**Goal:** Shared, senior, implementation-ready understanding of the product.
-- Product spec, audit framework, tech stack, prompts, data model, roadmap, CLAUDE.md.
-- **Exit criteria:** Docs reviewed and merged; team aligned on framework and rules.
+## Phase 0 — Documentation foundation ✅
+- Product spec, audit framework, tech stack, prompts, data model, roadmap, CLAUDE.md. **Merged.**
+
+## Phase 0.5 — Decisions ✅ (this PR)
+**Goal:** Resolve the product/technical decisions blocking a serious MVP.
+- [`DECISIONS.md`](./DECISIONS.md) (D1–D12) + reconciling updates across all docs.
+- **Exit criteria:** Data-source scope, latency, cost, async mechanism, auth, MVP section set, scorecard, case-studies, sourcing standard, golden example, anti-generic prompt rules, and data-model tightening are all decided.
+
+---
+
+## Phase 0.75 — De-risking spike (recommended before scaffolding)
+**Goal:** Prove the evidence loop on **one real URL** before building infrastructure.
+- Take one real URL → run **one** crawl + tech/tag detection → generate **one** section (e.g. Analytics & Tracking) with the generate+verify passes.
+- **Measure:** can claims be genuinely sourced? latency? cost?
+- **Exit criteria:** a sourced, specific, non-generic single section within the D2 latency / D3 cost envelope. If not, fix the approach before scaffolding.
 
 ---
 
 ## Phase 1 — MVP: thin end-to-end slice
-**Goal:** URL in → a real, sourced, readable partial audit out.
+**Goal:** URL in → a real, sourced, readable audit of the **MVP section set** out.
 - Next.js + TypeScript + Tailwind + shadcn/ui scaffold; Supabase project + schema + RLS; Vercel deploy.
+- **Auth:** Supabase Auth, **single-tenant**, org-aware schema + RLS from day one (D5).
+- **Async pipeline:** durable workflow runner + Supabase state (D4); streamed progress states (D2).
 - **URL ingestion + validation.**
-- **Auto-detection** of brand, industry, business model, competitors (with confidence).
-- **Evidence layer v1** — site fetch/parse + tech/tag detection, stored as citations.
-- **Audit generation for a core subset** of sections: Executive Summary, Client Introduction, Business Model & Strategy, Digital Audit → Analytics & Tracking, and Final Scorecard (partial).
-- **Sourcing + confidence rendered** in the UI; **Open Questions** section live.
-- **Verification pass** (anti-hallucination) wired in.
-- **Exit criteria:** A real company URL produces a trustworthy, sourced partial audit with zero fabricated numbers; uncertainty visibly marked.
+- **Auto-detection** of brand, industry, business model, competitors (with confidence). *(Full competitive benchmark deferred — D6.)*
+- **Evidence layer v1** — MVP sources only: site fetch/render + metadata + tech/tag detection, stored as `evidence` with citations (D1).
+- **Audit generation — exactly the MVP section set (D6):** Client Introduction, Business Model & Strategy, Website, Analytics & Tracking, SEO, Executive Summary, Open Questions.
+- **No numeric scorecard** — per-section evidence-confidence indicators instead (D7).
+- **Sourcing + confidence rendered** in the UI; **Open Questions** live.
+- **Verification pass** (anti-hallucination, anti-generic) wired in as a gate.
+- **Cost/latency guardrails** enforced (D2/D3).
+- **Exit criteria:** A real company URL produces a trustworthy, sourced MVP audit with zero fabricated numbers; uncertainty visibly marked; within latency/cost envelope (or honest partial).
 
-**Risks:** data-source ToS/scope; LLM cost; detection accuracy.
+**Risks:** detection accuracy; crawl reliability/blocking; LLM cost; keeping output non-generic.
 
 ---
 
-## Phase 2 — Full framework coverage
-**Goal:** All 13 sections generated with real signals.
-- Complete remaining sections: Industry Context, Competitive Benchmark, Customer Journey, full Digital Audit (Paid Media, Owned Media, SEO, Social & Content, CRO), Brand & Creative.
-- **Data-source integrations** expanded (SERP, SEO data, ads transparency, social) under confirmed ToS.
+## Phase 2 — Broader coverage + scorecard returns
+**Goal:** Expand beyond the own-site surface and reintroduce scoring honestly.
+- Add sections that need new sources: Industry Context, Competitive Benchmark, Customer Journey, Paid Media, Social & Content, CRO, Brand & Creative.
+- **Data-source integrations** expanded (SERP, SEO data, ads transparency, social) under confirmed ToS — moving items from D1's "paid/later" tier into scope.
+- **Numeric scorecard returns (D7):** only once ≥ 8 scorable dimensions have real underlying sections; define per-level (1–5) criteria + default weights then.
 - Full **sourcing/confidence UI** and sources panel per section.
-- **Scorecard** complete with weighting + rationale.
-- **Exit criteria:** Full 13-section audit on arbitrary URLs, every researched claim sourced or marked Unverified.
+- **Exit criteria:** Multi-section audit on arbitrary URLs with the scorecard live, every researched claim sourced or marked Unverified.
 
 ---
 
@@ -66,8 +81,10 @@
 ---
 
 ## Cross-phase backlog / open items
-- Final MVP data-source scope (legal/ToS).
-- Scorecard default weights.
+**Resolved in [`DECISIONS.md`](./DECISIONS.md):** ~~MVP data-source scope~~ (D1), ~~latency target & streaming UX~~ (D2), ~~async mechanism~~ (D4), ~~auth~~ (D5), ~~MVP section set~~ (D6), ~~scorecard timing~~ (D7), ~~case studies~~ (D8).
+
+**Still open:**
+- Scorecard default weights + per-level criteria (define when scorecard returns, Phase 2).
 - Pricing/packaging.
-- Audit generation latency target & streaming UX.
+- Workflow-runner vendor final pick (Inngest vs. Trigger.dev) — at implementation.
 - Multi-language output (post-English).

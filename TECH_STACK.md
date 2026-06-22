@@ -1,8 +1,8 @@
 # Client Audit AI — Tech Stack & Architecture
 
-> **Status:** Draft v0.1
+> **Status:** Draft v0.2 (updated for Phase 0.5 decisions)
 > **Purpose:** How we'll build the MVP. Implementation-ready, but no app code yet.
-> **Related:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`DATA_MODEL.md`](./DATA_MODEL.md) · [`ROADMAP.md`](./ROADMAP.md)
+> **Related:** [`DECISIONS.md`](./DECISIONS.md) (source of truth) · [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`DATA_MODEL.md`](./DATA_MODEL.md) · [`ROADMAP.md`](./ROADMAP.md)
 
 ---
 
@@ -60,18 +60,15 @@
 
 > **Principle:** Every external signal must be (a) lawful to access, (b) compliant with the source's ToS/robots, and (c) stored with a citation. **No invented data.** When a source is blocked or unavailable, the related claim is marked **Unverified** (see [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) §0).
 
-Candidate source categories (final MVP scope to be confirmed against ToS/legal):
-- **Site content** — fetch & parse the target site (respecting robots/ToS).
-- **Tech/tag detection** — identify analytics/marketing tags, frameworks, platforms from page output.
-- **SERP / search presence** — organic visibility signals via a compliant SERP/API provider.
-- **Ads transparency** — publicly available ad libraries (e.g. platform ad transparency centers) for creatives/activity.
-- **SEO data** — backlink/keyword/visibility via a licensed SEO data API.
-- **Social** — publicly available social profile signals via compliant APIs.
+**MVP source scope is now LOCKED — see [`DECISIONS.md`](./DECISIONS.md) D1.** Summary:
 
-**Open items flagged for legal/product review (do not assume resolved):**
-- Which providers are licensed and ToS-compliant for MVP.
-- Scraping policy and rate/robots handling.
-- Data retention limits per source.
+| Tier | Sources |
+|---|---|
+| ✅ **In MVP** | Target site fetch/render (HTML, DOM, headers, robots/sitemap), metadata (OG/JSON-LD/schema.org), tech/tag detection (GA4, GTM, pixels, widgets, CMS/platform), on-site conversion/lifecycle signals, publicly linked social URLs, basic performance signals |
+| 💳 **Paid / later** | SERP & rankings, backlinks/authority/traffic estimates (Ahrefs/Semrush/SimilarWeb), ad-library creative/spend depth, social analytics APIs, web-search grounding for stats & case studies |
+| 🚫 **Excluded MVP** | Anything needing the client's own account access (GA4, ad accounts, CRM/CDP), scraping behind auth/paywall, purchased datasets, ToS-prohibited automated access |
+
+**Compliance rules (still binding):** respect `robots.txt`/ToS, rate-limit our crawl, store provenance, mark blocked/unavailable sources as `Unverified`.
 
 ---
 
@@ -81,15 +78,19 @@ Candidate source categories (final MVP scope to be confirmed against ToS/legal):
 - **Structured outputs:** Sections generated against typed schemas matching [`DATA_MODEL.md`](./DATA_MODEL.md) (claims, confidence, citations).
 - **Tool use:** The model calls tools to fetch evidence rather than recalling facts from memory; this enforces sourceability.
 - **Verification pass:** A dedicated critique step checks every section for unsourced claims, fabricated numbers, and unmarked uncertainty before it is persisted.
-- **Cost controls:** Per-audit token/cost budget, caching of evidence, and step-level limits (see §6).
+- **Cost controls:** Per-audit token/cost budget (**≤ $2.00 soft, $3.50 hard cap** — [`DECISIONS.md`](./DECISIONS.md) D3), caching of evidence, per-audit max LLM-call and max tool/fetch counts. At hard cap: stop generation, mark remaining sections `Unverified`, complete partially. Per-step cost is tracked in `jobs` and rolled up to the audit (see [`DATA_MODEL.md`](./DATA_MODEL.md) D12 changes).
 
 ---
 
 ## 5. Jobs, queueing & scheduling
 
-- Audits are **asynchronous**. The orchestrator runs as background work with progress written to Supabase (`jobs` / `audit` status).
-- Options (decide in Phase 1): Vercel background functions + cron, a queue (e.g. Supabase queue / external queue), or a dedicated worker. Chosen approach documented when MVP is implemented.
-- Graceful degradation: a failing data source marks affected claims Unverified; the audit still completes.
+**DECIDED — see [`DECISIONS.md`](./DECISIONS.md) D4:** Audits run as **durable background jobs orchestrated by a step/workflow runner (Inngest or Trigger.dev) on Vercel, with all state in Supabase.**
+
+- API route handler **enqueues** and returns immediately; the runner executes **discrete durable steps** (detect → gather → generate-section × N → verify → score → synthesize), each within serverless time limits, with **retries** and **observability**.
+- Supabase (`audits`, `audit_sections`, `jobs`) is the single source of truth for progress; the UI polls/subscribes.
+- **Latency envelope (D2):** ideal ≤ 90s, acceptable ≤ 4m, **hard ceiling 6m** → remaining sections marked `Unverified`, audit completes partially.
+- **Graceful degradation:** a failing/blocked data source marks affected claims `Unverified`; the audit still completes.
+- The step-based design ports to a self-hosted worker later because state already lives in Supabase (vendor lock-in is low).
 
 ---
 
@@ -115,14 +116,20 @@ SUPABASE_SERVICE_ROLE_KEY=          # server-only
 # LLM
 ANTHROPIC_API_KEY=
 
-# Data sources (subset, depending on MVP scope)
-SERP_API_KEY=
-SEO_DATA_API_KEY=
-TECH_DETECTION_API_KEY=
+# Workflow runner (D4) — one of:
+INNGEST_EVENT_KEY=
+INNGEST_SIGNING_KEY=
+# (or Trigger.dev equivalents)
+
+# Data sources — NOTE: MVP uses our own crawl (no paid keys required).
+# The below are PAID/LATER (D1), not needed for MVP:
+# SERP_API_KEY=
+# SEO_DATA_API_KEY=
 
 # App
 APP_BASE_URL=
-AUDIT_COST_BUDGET_USD=              # per-audit guardrail
+AUDIT_COST_BUDGET_USD=2.00          # soft per-audit guardrail (D3)
+AUDIT_COST_HARD_CAP_USD=3.50        # hard cap → stop + mark Unverified (D3)
 ```
 
 > Secrets are configured in Vercel/Supabase, never committed.

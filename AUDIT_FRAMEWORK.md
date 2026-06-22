@@ -1,8 +1,10 @@
 # Client Audit AI — Audit Framework
 
-> **Status:** Draft v0.1
+> **Status:** Draft v0.2 (updated for Phase 0.5 decisions)
 > **Purpose:** The methodology behind the audit. This is the product's intellectual core: *what* we assess, *how*, *from which signals*, and *how we handle sourcing and uncertainty*.
-> **Related:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`PROMPTS.md`](./PROMPTS.md) · [`DATA_MODEL.md`](./DATA_MODEL.md)
+> **Related:** [`DECISIONS.md`](./DECISIONS.md) (source of truth) · [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md) · [`PROMPTS.md`](./PROMPTS.md) · [`DATA_MODEL.md`](./DATA_MODEL.md)
+>
+> The **full 13-section model** below is the long-term framework. For MVP, only the sections marked **`[MVP]`** are built; the rest are **`[Deferred]`** per [`DECISIONS.md`](./DECISIONS.md) D6.
 
 ---
 
@@ -37,111 +39,134 @@ Each section produces:
 - A **detailed body** (findings, structured).
 - A list of **citations**.
 - A list of **assumptions / uncertainties**.
-- (Where applicable) **opportunities** and **risks** tagged for the scorecard and risk register.
+- (Where applicable) **opportunities** and **risks** tagged for the risk register (and, post-MVP, the scorecard).
+
+### 0.6 Golden example (canonical reference)
+
+This is the bar for every finding. Defined in full in [`DECISIONS.md`](./DECISIONS.md) D10; summarized here because it is the single most important anti-generic guardrail.
+
+- **✅ Good (specific + sourced):** "Loads GA4 (`G-XXXX`) via GTM (`GTM-YYYY`) but **no server-side tagging or consent-mode signal detected**, so post-consent EU measurement is likely incomplete." — observed_fact + inference, confidence Medium, `evidence_ids:[ev_12,ev_13]`.
+- **❌ Bad (generic — rejected):** "The company should improve its analytics setup to optimize marketing." — no evidence, applies to anyone.
+- **✅ Sourced (observed):** "A Meta Pixel (`id 1234…`) fires on the homepage." — observed_fact, High, `[ev_07]`.
+- **✅ Inference (marked):** "**Likely** DTC e-commerce." — inference, Medium, basis: cart+checkout present, no reseller language, `[ev_02,ev_03,ev_04]`.
+- **✅ Unknown:** "CAC/LTV are **not observable** externally." — moved to Open Questions; never assigned a number.
+
+### 0.7 Minimum sourcing standard (MVP)
+Per-section minimums are defined in [`DECISIONS.md`](./DECISIONS.md) D9. Global rule: **a section with zero observed evidence for its core claims must declare itself `Unverified` rather than produce inferred prose.**
 
 ---
 
 ## The 13-Section Audit Model
 
-### 1. Executive Summary
+### 1. Executive Summary `[MVP]`
 - **Purpose:** The senior synthesis — what this company is, how it makes money, where the biggest opportunities and risks are, and the headline scorecard. Written last, read first.
 - **Answers:** Who is this client? What matters most? Where would we focus?
 - **Inputs:** Synthesized from all other sections.
 - **Output:** 1-page narrative + top 3–5 opportunities + top 3–5 risks + headline score.
 - **Sourcing rule:** No new claims here — only synthesis of already-sourced findings.
 
-### 2. Client Introduction
+### 2. Client Introduction `[MVP]`
 - **Purpose:** Establish identity and context.
 - **Answers:** What does the brand say it is? Value proposition, positioning, products/services, target audience, geography, maturity.
 - **Signals/sources:** Homepage, about page, product pages, footer, meta tags.
 - **Output:** Brand profile + detected positioning.
 - **Uncertainty:** Distinguish brand's *self-description* (observed) from our *assessment* (inference).
 
-### 3. Business Model & Strategy
+### 3. Business Model & Strategy `[MVP]`
 - **Purpose:** Understand how value is created, delivered, and captured.
 - **Answers:** Revenue model, pricing, monetization, channels, key segments, apparent strategic priorities.
 - **Signals/sources:** Pricing pages, checkout/cart, plans, partner/reseller pages, careers (hiring signals), public statements.
 - **Output:** Business-model classification (with confidence) + strategic read.
 - **Uncertainty:** Internal economics (margins, CAC, LTV) are **not observable** — never fabricate; route to Open Questions.
 
-### 4. Industry Context
+### 4. Industry Context `[Deferred]`
 - **Purpose:** Situate the client in its market.
 - **Answers:** Category definition, market dynamics, trends, regulatory notes, typical KPIs for the category.
 - **Signals/sources:** Industry references, reputable public reporting (cited), category norms.
 - **Output:** Concise industry brief relevant to *this* client.
 - **Sourcing rule:** Market figures must be cited to a real source or omitted; never invent market sizes.
 
-### 5. Competitive Benchmark
+### 5. Competitive Benchmark `[Deferred]`
 - **Purpose:** Understand the competitive set and relative position.
+- **MVP note:** competitor *names* may be auto-detected, but the comparative benchmark needs competitor data sources (deferred per [`DECISIONS.md`](./DECISIONS.md) D1/D6).
 - **Answers:** Who are the direct/adjacent competitors? How do they compare on positioning, offer, digital presence?
 - **Signals/sources:** Auto-detected competitors, SERP overlap, category knowledge, competitor sites.
 - **Output:** Competitor table + comparative read + whitespace/opportunities.
 - **Uncertainty:** Mark inferred competitors vs. confirmed; note any competitor not verifiable.
 
-### 6. Customer Journey
+### 6. Customer Journey `[Deferred]`
 - **Purpose:** Map how a prospect becomes (and stays) a customer.
 - **Answers:** Awareness → consideration → conversion → retention → advocacy; touchpoints and gaps.
 - **Signals/sources:** Site funnel, content, CTAs, email/CRM signals, social, retargeting presence.
 - **Output:** Journey map with observed touchpoints, friction points, and gaps.
 
-### 7. Digital Audit
+### 7. Digital Audit `[Partial MVP]`
 The most operational section. Each sub-area carries its own findings, sourcing, and opportunities.
+**MVP builds only:** 7.2 Owned Media → Website, 7.3 SEO (technical/on-page from our crawl; no rankings/backlinks), and 7.4 Analytics & Tracking. The rest are `[Deferred]` (need paid/ad-library/social sources — [`DECISIONS.md`](./DECISIONS.md) D1/D6).
 
-#### 7.1 Paid Media
+#### 7.1 Paid Media `[Deferred]`
 - **Media** — Which paid channels are detectably in use (ads transparency libraries, tracking tags, retargeting). What platforms, apparent activity.
 - **Creatives & Communication** — Observed ad creatives/messaging (where publicly available via ad libraries), tone, offers, formats.
 - **Opportunities** — Gaps and upside in channel mix, creative, targeting (as diagnosis, sourced/flagged).
 
 #### 7.2 Owned Media
-- **Website** — Structure, UX, performance signals, content quality, conversion elements.
-- **Communication & Creatives** — On-site messaging, brand voice, visual system consistency.
-- **CRM / Email / WhatsApp / Push** — Detectable lifecycle/messaging infrastructure (signup flows, email vendor tags, WhatsApp/chat widgets, push/web-push prompts).
+- **Website** `[MVP]` — Structure, UX, performance signals, content quality, conversion elements.
+- **Communication & Creatives** `[Deferred]` — On-site messaging, brand voice, visual system consistency.
+- **CRM / Email / WhatsApp / Push** `[Partial MVP]` — Detectable lifecycle/messaging infrastructure (signup flows, email vendor tags, WhatsApp/chat widgets, push/web-push prompts). **MVP:** only the *presence* of such tools via tag/widget detection; behavior/content analysis deferred.
 - **Opportunities** — Owned-channel upside.
 
-#### 7.3 SEO
+#### 7.3 SEO `[MVP]`
 - **Purpose:** Organic visibility and technical/content health.
 - **Signals/sources:** Indexability, metadata, structure, content depth, SERP presence, backlinks (cited tools where available).
 - **Output:** SEO diagnosis + prioritized opportunities.
 
-#### 7.4 Analytics & Tracking
+#### 7.4 Analytics & Tracking `[MVP]`
 - **Pixels / Tags** — Detected analytics/marketing tags (e.g. GA4, Meta Pixel, GTM, TikTok, LinkedIn, etc.) via tag detection.
 - **Measurement** — How measurement appears to be set up; gaps in coverage.
 - **Events** — Detectable event/conversion tracking signals.
 - **Attribution Risks** — Risks to data quality/attribution (cookie/consent setup, duplicate tags, missing server-side, privacy changes). **This feeds the Risks & Alerts section.**
 
-#### 7.5 Social & Content
+#### 7.5 Social & Content `[Deferred]`
 - **Purpose:** Social presence and content strategy read.
 - **Signals/sources:** Linked social profiles, posting cadence/quality (observed), content themes.
 - **Output:** Social/content diagnosis + opportunities.
 
-#### 7.6 CRO (Conversion Rate Optimization)
+#### 7.6 CRO (Conversion Rate Optimization) `[Deferred]`
 - **Purpose:** Conversion experience quality.
+- **MVP note:** basic on-site conversion *observations* (forms, CTAs, checkout presence) appear under Website; full CRO hypotheses are deferred.
 - **Signals/sources:** Funnel friction, forms, page speed, trust elements, mobile experience, checkout/lead flow.
 - **Output:** CRO diagnosis + prioritized hypotheses (framed as hypotheses, not guaranteed lifts).
 
-### 8. Brand & Creative Diagnosis
+### 8. Brand & Creative Diagnosis `[Deferred]`
 - **Purpose:** Assess brand strength and creative quality.
 - **Answers:** Clarity of positioning, distinctiveness, consistency, messaging quality, visual identity.
 - **Signals/sources:** Site, social, ad creatives, brand assets.
 - **Output:** Brand/creative assessment (qualitative, clearly framed as expert judgment, not fabricated metrics).
 
-### 9. Growth Diagnosis
+### 9. Growth Diagnosis `[Deferred]`
 - **Growth Model** — How the business appears to grow (acquisition-led, retention-led, virality, sales-led, etc.) based on observed signals.
 - **Loop Opportunities** — Specific growth-loop opportunities relevant to this model.
-- **Successful loop case studies from companies in the same industry** — Real, **sourced** examples of growth loops from companies in the *same industry/category*. These must be real and cited; if none can be sourced confidently, say so rather than inventing examples.
-- **Output:** Growth read + loop opportunities + sourced case studies (or explicit "none verified").
+- **Same-industry loop case studies** — **Resolved per [`DECISIONS.md`](./DECISIONS.md) D8 (hallucination risk):**
+  - In its first shipped version, this section produces **"loop hypotheses"** tied to the client's *observed* model — clearly marked as hypotheses, not cited facts.
+  - **Real, cited** same-industry case studies are produced **only** when a web-search/retrieval grounding mechanism (a paid source) is available. Without grounding, the system returns **"none verified"** and **never invents a case study.**
+- **Output:** Growth read + loop hypotheses; cited case studies only when grounded.
 
-### 10. AI Readiness
+### 10. AI Readiness `[Deferred]`
 - **Purpose:** Assess how prepared the client is to leverage AI (in marketing, product, ops) and where AI could create leverage.
 - **Answers:** Observable AI usage (chatbots, AI features, content), data/tracking maturity (ties to 7.4), opportunities for AI-driven growth/efficiency.
 - **Output:** AI readiness read + concrete AI opportunities, with maturity framed honestly.
 
-### 11. Risks & Alerts
+### 11. Risks & Alerts `[Deferred as a consolidated section]`
+- **MVP note:** attribution/measurement risks still surface **inline** in §7.4; the consolidated cross-section risk register is deferred.
 - **Purpose:** Consolidated risk register.
 - **Inputs:** Pulls especially from Attribution Risks (7.4), plus brand, competitive, compliance, dependency, and measurement risks surfaced anywhere.
 - **Output:** Prioritized risk list (severity × likelihood) with rationale and source/confidence per risk.
 
-### 12. Final Scorecard
+### 12. Final Scorecard `[Deferred — confidence indicators in MVP]`
+
+> **Resolved per [`DECISIONS.md`](./DECISIONS.md) D7:** there is **no numeric 1–5 scorecard in MVP**. A score implies measurement, and scoring dimensions whose sections aren't built would violate the no-invented-data principle. Instead, each MVP section shows a **qualitative maturity read + an evidence-confidence indicator** (High/Medium/Low/Unverified). The numeric weighted scorecard **returns in Phase 2**, once ≥ 8 scorable dimensions have real underlying sections, with explicit per-level (1–5) criteria and default weights defined at that time.
+
+The full long-term rubric (for reference when it returns):
 - **Purpose:** A transparent, weighted snapshot of the client's current state.
 - **Scoring rubric:** Each dimension scored **1–5** with explicit criteria and a one-line rationale + confidence.
 
@@ -163,7 +188,7 @@ The most operational section. Each sub-area carries its own findings, sourcing, 
 - **Weighting:** Configurable; default weights documented when MVP scoring is implemented.
 - **Output:** Per-dimension score + weighted total + confidence note. Scores must reflect *evidence strength* — low-evidence dimensions are flagged, not guessed.
 
-### 13. Open Questions / Information Needed To Go Deeper
+### 13. Open Questions / Information Needed To Go Deeper `[MVP]`
 - **Purpose:** Make the unknowns explicit and actionable.
 - **Content:** Every assumption, Unverified claim, and blocked data point collected across sections, plus the specific data that would resolve each (e.g. "access to GA4", "ad account spend", "actual pricing tiers").
 - **Output:** Prioritized list of what to ask the client / what to access next.

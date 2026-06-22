@@ -1,8 +1,10 @@
 # Client Audit AI — Product Specification
 
-> **Status:** Draft v0.1 (initial product documentation)
+> **Status:** Draft v0.2 (updated for Phase 0.5 decisions)
 > **Owner:** Product
-> **Related docs:** [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`TECH_STACK.md`](./TECH_STACK.md) · [`ROADMAP.md`](./ROADMAP.md) · [`PROMPTS.md`](./PROMPTS.md) · [`DATA_MODEL.md`](./DATA_MODEL.md)
+> **Related docs:** [`DECISIONS.md`](./DECISIONS.md) (source of truth) · [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`TECH_STACK.md`](./TECH_STACK.md) · [`ROADMAP.md`](./ROADMAP.md) · [`PROMPTS.md`](./PROMPTS.md) · [`DATA_MODEL.md`](./DATA_MODEL.md)
+>
+> **Note:** Where this spec and [`DECISIONS.md`](./DECISIONS.md) conflict, `DECISIONS.md` wins.
 
 ---
 
@@ -115,7 +117,19 @@ Export the audit (PDF/Markdown/shareable link) for internal use or client delive
 
 ---
 
+## 6b. Definition of Done for an audit (MVP)
+
+An MVP audit is **complete and acceptable** when:
+- All **in-scope MVP sections** (see [`DECISIONS.md`](./DECISIONS.md) D6) are present: Client Introduction, Business Model & Strategy, Website, Analytics & Tracking, SEO, Executive Summary, Open Questions.
+- Every **core claim** in each section is either backed by an `evidence` record or explicitly marked `Unverified` (per the minimum sourcing standard in `DECISIONS.md` D9).
+- The audit contains **zero fabricated numbers, names, or dates** (enforced by the verification gate).
+- Every `Unverified`/assumption lands in **Open Questions** with the data that would resolve it.
+- It completed within the **latency** envelope (D2) and **cost** budget (D3), or completed **partially and honestly** (remaining sections marked `Unverified`) if a ceiling was hit.
+- Each section carries an **evidence-confidence indicator** (no numeric scorecard in MVP — D7).
+
 ## 7. Non-Functional Requirements
+
+> Concrete targets are set in [`DECISIONS.md`](./DECISIONS.md): latency (D2), cost (D3), async execution (D4), auth/RLS (D5).
 
 - **Trustworthiness / auditability** — every claim is inspectable down to its source; this is a core feature, not a nice-to-have.
 - **Performance** — full audit generation should complete in a reasonable, communicated time (async with progress, not a frozen spinner).
@@ -158,6 +172,12 @@ Export the audit (PDF/Markdown/shareable link) for internal use or client delive
 
 ## 11. Open Product Questions
 
-- Which data sources are in scope for MVP given ToS/legal constraints? (see [`TECH_STACK.md`](./TECH_STACK.md))
-- Depth vs. speed trade-off for first audit (full 13 sections vs. progressive streaming)?
-- Pricing/packaging (per-audit credits vs. seats) — out of scope for this doc, flagged for product.
+**Resolved in [`DECISIONS.md`](./DECISIONS.md):**
+- ~~Which data sources are in scope for MVP?~~ → D1 (target's own site + tech/tag detection).
+- ~~Depth vs. speed trade-off for the first audit?~~ → D2 (always async, streamed) + D6 (self-contained MVP section set).
+- ~~Auth posture?~~ → D5 (single-tenant authenticated, RLS from day one).
+
+**Still open (product, not build-blocking):**
+- Pricing/packaging (per-audit credits vs. seats).
+- Multi-language audit output (English first).
+- When to add optional client-account integrations (e.g. GA4) to move from external-signal to verified-data audits.

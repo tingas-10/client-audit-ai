@@ -1,8 +1,8 @@
 # Client Audit AI — Prompt Engineering Spec
 
-> **Status:** Draft v0.1
+> **Status:** Draft v0.2 (updated for Phase 0.5 decisions)
 > **Purpose:** The prompt architecture that produces exhaustive, sourceable, uncertainty-aware audits. These are specifications/templates, not final tuned prompts.
-> **Related:** [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`DATA_MODEL.md`](./DATA_MODEL.md) · [`TECH_STACK.md`](./TECH_STACK.md)
+> **Related:** [`DECISIONS.md`](./DECISIONS.md) (source of truth) · [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) · [`DATA_MODEL.md`](./DATA_MODEL.md) · [`TECH_STACK.md`](./TECH_STACK.md)
 
 ---
 
@@ -46,6 +46,21 @@ NON-NEGOTIABLE RULES:
 
 You will be given evidence items (each with an id, source, and observed content).
 Only use these evidence items as the basis for factual claims.
+
+ANTI-GENERIC RULES (see DECISIONS.md D11): every insight you output MUST be one of:
+  (a) tied to OBSERVED EVIDENCE (cite the evidence_id), OR
+  (b) a COMPARISON vs. a named/sourced competitor or category norm, OR
+  (c) a CLEARLY MARKED INFERENCE with a basis + confidence.
+If an insight is none of these, DO NOT output it.
+
+BANNED (will be rejected by the verification gate):
+  - Advice true for any company ("improve SEO", "post more on social", "optimize the funnel").
+  - Recommendations with no observed trigger.
+  - Numbers/dates/names/competitor claims with no evidence.
+  - Confident prose where evidence is thin (downgrade to Low/Unverified instead).
+
+REQUIRED STYLE: name the specific page/element/tag/competitor you observed, state the
+so-what, attach a confidence level. Prefer "Unverified / none found" over a guess.
 ```
 
 ---
@@ -70,11 +85,12 @@ Only use these evidence items as the basis for factual claims.
 ## 4. Clarification prompt (only-when-necessary)
 
 **Goal:** Ask the *fewest* questions that unblock a high-quality audit.
+
+**Threshold (DECISIONS.md D11):** ask a clarifying question **only** when a *core dimension required by an in-scope MVP section* (brand identity, industry, or business model) is `Unverified` or `Low` **and** cannot be resolved from the crawl. Otherwise return an empty list and proceed. Never ask about dimensions only used by deferred sections.
 ```
 Given the detection result and its blocking_ambiguities, decide if clarifying
-questions are TRULY NECESSARY (i.e., a critical dimension is Unverified or Low and
-cannot be resolved from available evidence). If confidence is sufficient, return an
-empty list and proceed. Otherwise return at most 3 high-leverage questions.
+questions are TRULY NECESSARY per the threshold above. If confidence is sufficient,
+return an empty list and proceed. Otherwise return at most 3 high-leverage questions.
 ```
 **Output:**
 ```json
@@ -130,6 +146,9 @@ You are a strict reviewer. Given a generated section and its evidence items, fla
 3. Any inference or assumption presented as observed fact.
 4. Any missing uncertainty label.
 5. Any internal-economics or non-observable claim asserted as fact.
+6. Any GENERIC insight (D11): advice/recommendation not tied to observed evidence,
+   a sourced comparison, or a clearly marked inference — i.e. text that would be true
+   for any company. Flag for removal or rewrite into a specific, evidence-tied claim.
 
 Return a list of violations with the offending statement and a required fix
 (e.g., "downgrade to Unverified and move to Open Questions"). If clean, return [].
@@ -142,9 +161,19 @@ Sections with violations are regenerated or auto-corrected before being saved.
 
 ---
 
-## 7. Anti-hallucination patterns (summary)
+## 7. Few-shot: specific vs. generic (use as in-context examples)
+
+These mirror the canonical golden example in [`DECISIONS.md`](./DECISIONS.md) D10 / [`AUDIT_FRAMEWORK.md`](./AUDIT_FRAMEWORK.md) §0.6. Feed the ✅ as positive few-shot and the ❌ as a negative example.
+
+- **✅ Specific + sourced:** "Loads GA4 (`G-XXXX`) via GTM (`GTM-YYYY`); **no server-side tagging or consent-mode signal detected** → post-consent EU measurement likely incomplete." (observed_fact + inference, Medium, `evidence_ids:[ev_12,ev_13]`)
+- **❌ Generic (REJECT):** "The company should improve its analytics setup and track conversions to optimize marketing." (no evidence, applies to anyone)
+- **✅ Inference (marked):** "**Likely** DTC e-commerce." (inference, Medium, basis: cart+checkout present, no reseller language, `[ev_02,ev_03,ev_04]`)
+- **✅ Unknown:** "CAC/LTV **not observable** externally." → Open Questions, needed_data: client GA4 + ad-account access. (never a number)
+
+## 8. Anti-hallucination + anti-generic patterns (summary)
 - Evidence-grounded generation (tool-fetched, id-referenced).
 - Mandatory `claim_type` + `confidence` on every finding.
-- Verification pass as a gate.
+- **Anti-generic rule (D11):** every insight = evidence, sourced comparison, or marked inference — nothing else.
+- Verification pass as a gate (rejects unsourced **and** generic output).
 - Empty-over-invented: prefer "Unverified / none found" to fabrication.
 - Open Questions as the sink for every unknown.
