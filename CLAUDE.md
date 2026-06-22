@@ -35,8 +35,17 @@
 6. **Exhaustive but readable.** Depth with structure and progressive disclosure.
 7. **Prefer "Unverified / none found" over a guess.** Every unknown goes to Open Questions (Section 13).
 
-## Intended stack (no app code yet)
-Next.js (App Router) · TypeScript · Tailwind · shadcn/ui · Supabase (Postgres + Auth + Storage + RLS) · Vercel · Anthropic Claude (latest models) for detection/generation/verification.
+## Stack (Phase 1 scaffold is live)
+Next.js (App Router) · TypeScript · Tailwind · shadcn/ui-style components · Supabase (Postgres + Auth + RLS) · Vercel · Anthropic Claude (latest models) for detection/generation/verification.
+
+## Running the app (Phase 1)
+1. `npm install`
+2. Copy `.env.example` → `.env.local` and fill Supabase + Anthropic values.
+3. Apply the schema: set `SUPABASE_DB_URL`, then `npm run migrate` (runs `db/migrations/0001_init.sql`).
+4. `npm run dev` → http://localhost:3000 · sign up at `/login` · paste a URL.
+5. `npm run build` / `npm run typecheck` / `npm run lint` for checks.
+
+**Pipeline:** `lib/audit/orchestrator.ts` runs detect → gather_evidence → generate → persist. Evidence collectors live in `lib/evidence/collectors/` (static + GTM container are real; `renderedNetwork.ts` is a stub until Phase 1.1). Only `digital_audit_analytics_tracking` generates real content in PR1; other sections are locked placeholders. No numeric scorecard (D7).
 
 ## When you build (future)
 - Keep the LLM structured-output schemas in sync with [`DATA_MODEL.md`](./DATA_MODEL.md) and [`PROMPTS.md`](./PROMPTS.md).
@@ -47,4 +56,4 @@ Next.js (App Router) · TypeScript · Tailwind · shadcn/ui · Supabase (Postgre
 - TypeScript strict; suggested layout: `app/`, `components/`, `lib/`, `db/`, `prompts/`.
 
 ## Current state
-Phase 0.5 — documentation + locked decisions. No application code yet. The blocking MVP decisions are resolved in [`DECISIONS.md`](./DECISIONS.md). See [`ROADMAP.md`](./ROADMAP.md) for what comes next.
+Phase 1 (in progress) — the MVP scaffold is live: auth, Supabase schema + RLS, the evidence/detection/generation pipeline, and a sourced report UI. Only Analytics & Tracking is fully generated; headless runtime capture and the other six sections come next. Decisions remain locked in [`DECISIONS.md`](./DECISIONS.md); see [`ROADMAP.md`](./ROADMAP.md).
