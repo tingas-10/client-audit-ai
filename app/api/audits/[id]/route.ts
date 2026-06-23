@@ -59,6 +59,19 @@ export async function GET(
         .maybeSingle(),
     ]);
 
+  // Surface the failure cause (recorded on the failed job) for the UI.
+  const { data: failedJob } =
+    audit.status === "failed"
+      ? await db
+          .from("jobs")
+          .select("step, error")
+          .eq("audit_id", id)
+          .eq("status", "failed")
+          .order("finished_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : { data: null };
+
   // Findings for each section.
   const sectionIds = (sections.data ?? []).map((s) => s.id);
   const { data: findings } = sectionIds.length
@@ -76,5 +89,6 @@ export async function GET(
     openQuestions: openQuestions.data ?? [],
     competitors: competitors.data ?? [],
     geography: geography.data ?? null,
+    failure: failedJob ?? null,
   });
 }

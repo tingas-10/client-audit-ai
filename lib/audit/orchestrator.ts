@@ -80,6 +80,18 @@ export async function runAudit(auditId: string): Promise<void> {
       })
       .eq("id", auditId);
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    // Record the failure on the in-progress job (was left stuck at 'running')
+    // and on the audit, so the cause is queryable and surfaceable in the UI.
+    await db
+      .from("jobs")
+      .update({
+        status: "failed",
+        error: message,
+        finished_at: new Date().toISOString(),
+      })
+      .eq("audit_id", auditId)
+      .eq("status", "running");
     await db.from("audits").update({ status: "failed" }).eq("id", auditId);
     throw err;
   }

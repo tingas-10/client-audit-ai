@@ -52,8 +52,16 @@ export function AuditReport({ auditId }: { auditId: string }) {
   if (error) return <p className="text-sm text-destructive">{error}</p>;
   if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
 
-  const { audit, sections, findings, evidence, openQuestions, competitors, geography } =
-    data;
+  const {
+    audit,
+    sections,
+    findings,
+    evidence,
+    openQuestions,
+    competitors,
+    geography,
+    failure,
+  } = data;
   const running = RUNNING_STATES.includes(audit.status);
   const orderedSections = MVP_SECTION_KEYS.map((key) =>
     sections.find((s) => s.section_key === key),
@@ -76,6 +84,21 @@ export function AuditReport({ auditId }: { auditId: string }) {
               Working… detecting brand, gathering evidence, and generating the audit.
               This page updates automatically.
             </p>
+          )}
+          {audit.status === "failed" && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+              <p className="font-medium text-destructive">Audit failed</p>
+              {failure?.error ? (
+                <p className="mt-1 break-words text-muted-foreground">
+                  {failure.step ? `Step "${failure.step}": ` : ""}
+                  {failure.error}
+                </p>
+              ) : (
+                <p className="mt-1 text-muted-foreground">
+                  No error detail was recorded. Check the server logs.
+                </p>
+              )}
+            </div>
           )}
           {geography && (
             <div className="flex flex-wrap items-center gap-2">
