@@ -19,10 +19,15 @@ Supabase (Postgres + Auth + RLS) · Anthropic Claude · Vercel-ready.
 npm install
 cp .env.example .env.local   # fill Supabase + Anthropic values
 # apply the schema (set SUPABASE_DB_URL first):
-npm run migrate
+npm run migrate              # runs db/migrations/*.sql in order (0001 then 0002)
 npm run dev                  # http://localhost:3000
 ```
 Sign up at `/login`, then paste a URL on the home page.
+
+> If you applied the schema via the Supabase **SQL Editor** instead of `npm run migrate`,
+> run **both** files in order: `db/migrations/0001_init.sql` then
+> `db/migrations/0002_grants.sql`. `0002` grants table privileges to the Supabase
+> API roles — without it, audit creation fails with `42501 permission denied for table`.
 
 ## What's real vs. stubbed in PR1
 - **Real:** auth (single-tenant + RLS), URL → audit → async job, evidence layer
