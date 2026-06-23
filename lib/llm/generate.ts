@@ -54,13 +54,28 @@ function extractJson(text: string): unknown {
   const candidate = fenced ? fenced[1] : text;
   const start = candidate.search(/[[{]/);
   if (start === -1) throw new Error("No JSON found in model response");
-  // Find the matching closing bracket by scanning.
+  // Find the matching closing bracket by scanning. We must skip braces that
+  // appear INSIDE string literals (e.g. a finding mentioning "dataLayer.push({…})"),
+  // otherwise the depth count breaks and we'd wrongly report "Unbalanced JSON".
   const opener = candidate[start];
   const closer = opener === "{" ? "}" : "]";
   let depth = 0;
+  let inString = false;
+  let escaped = false;
   for (let i = start; i < candidate.length; i++) {
-    if (candidate[i] === opener) depth++;
-    else if (candidate[i] === closer) {
+    const ch = candidate[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+    if (ch === opener) depth++;
+    else if (ch === closer) {
       depth--;
       if (depth === 0) {
         return JSON.parse(candidate.slice(start, i + 1));
