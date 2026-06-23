@@ -2,34 +2,44 @@ import { z } from "zod";
 import type { EvidenceItem, GeneratedSection } from "@/lib/audit/types";
 import { generateJson, type LlmUsage } from "@/lib/llm/generate";
 import { verifySection } from "@/lib/llm/verify";
+import {
+  confidenceEnum,
+  claimTypeEnum,
+  severityEnum,
+  priorityEnum,
+} from "@/lib/llm/enums";
 import { SYSTEM_PROMPT } from "@/prompts/system";
 import { analyticsTrackingUserPrompt } from "@/prompts/analyticsTracking";
 
-const confidence = z.enum(["high", "medium", "low", "unverified"]);
-
 const schema = z.object({
-  summary: z.string(),
+  summary: z.string().default(""),
   findings: z
     .array(
       z.object({
         statement: z.string(),
-        claimType: z.enum(["observed_fact", "inference", "assumption"]),
-        confidence,
+        claimType: claimTypeEnum,
+        confidence: confidenceEnum,
         evidenceRefIds: z.array(z.string()).default([]),
         basis: z.string().optional(),
       }),
     )
     .default([]),
   opportunities: z
-    .array(z.object({ statement: z.string(), rationale: z.string(), confidence }))
+    .array(
+      z.object({
+        statement: z.string(),
+        rationale: z.string().default(""),
+        confidence: confidenceEnum,
+      }),
+    )
     .default([]),
   risks: z
     .array(
       z.object({
         statement: z.string(),
-        severity: z.enum(["low", "medium", "high"]).optional(),
-        rationale: z.string(),
-        confidence,
+        severity: severityEnum,
+        rationale: z.string().default(""),
+        confidence: confidenceEnum,
       }),
     )
     .default([]),
@@ -38,11 +48,11 @@ const schema = z.object({
       z.object({
         question: z.string(),
         neededData: z.string().optional(),
-        priority: z.enum(["low", "medium", "high"]).default("medium"),
+        priority: priorityEnum,
       }),
     )
     .default([]),
-  confidence,
+  confidence: confidenceEnum,
 });
 
 /**

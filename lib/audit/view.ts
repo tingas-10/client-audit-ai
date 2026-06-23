@@ -18,6 +18,7 @@ export interface AuditView {
   openQuestions: OpenQuestionView[];
   competitors: CompetitorView[];
   geography: GeographyView | null;
+  failure: { step: string; error: string | null } | null;
 }
 
 export interface SectionView {

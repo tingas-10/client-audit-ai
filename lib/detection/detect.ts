@@ -1,10 +1,13 @@
 import { z } from "zod";
 import type { DetectionResult, EvidenceItem } from "@/lib/audit/types";
 import { generateJson, type LlmUsage } from "@/lib/llm/generate";
+import { confidenceEnum, relationshipEnum } from "@/lib/llm/enums";
 import { SYSTEM_PROMPT } from "@/prompts/system";
 import { detectionUserPrompt } from "@/prompts/detection";
 
-const confidence = z.enum(["high", "medium", "low", "unverified"]);
+// Tolerant enums (lib/llm/enums) — normalize benign model label variants instead
+// of hard-failing the whole audit.
+const confidence = confidenceEnum;
 const refIds = z.array(z.string()).default([]);
 
 const schema = z.object({
@@ -32,7 +35,7 @@ const schema = z.object({
     .array(
       z.object({
         name: z.string(),
-        relationship: z.enum(["direct", "indirect", "aspirational"]),
+        relationship: relationshipEnum,
         confidence,
         evidenceRefIds: refIds,
       }),
