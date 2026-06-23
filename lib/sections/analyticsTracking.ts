@@ -68,7 +68,10 @@ export async function generateAnalyticsTracking(args: {
     system: SYSTEM_PROMPT,
     user: analyticsTrackingUserPrompt(args.brand, args.evidence, args.runtimeCaptured),
     schema,
-    maxTokens: 2500,
+    // The A&T section is detailed; on tracking-rich sites it needs ~2.5k–3.1k
+    // output tokens. 2500 truncated the JSON ("Unbalanced JSON"). 8000 gives
+    // comfortable headroom (verified against gollo.com).
+    maxTokens: 8000,
   });
 
   const draft: GeneratedSection = {

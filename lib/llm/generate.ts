@@ -31,6 +31,15 @@ export async function generateJson<T>(opts: {
     messages: [{ role: "user", content: opts.user }],
   });
 
+  // If the model hit the token ceiling, the JSON is truncated. Fail with a
+  // clear, actionable message instead of a misleading "Unbalanced JSON" from the
+  // downstream parser.
+  if (res.stop_reason === "max_tokens") {
+    throw new Error(
+      "Model response was truncated at the token limit (increase maxTokens for this call).",
+    );
+  }
+
   const text = res.content
     .map((b) => (b.type === "text" ? b.text : ""))
     .join("")
