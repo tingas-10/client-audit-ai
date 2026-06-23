@@ -78,11 +78,11 @@ export function AuditReport({ auditId }: { auditId: string }) {
             </p>
           )}
           {geography && (
-            <p>
-              <span className="text-muted-foreground">Market / geography: </span>
-              {geography.primary_markets.join(", ") || "—"}{" "}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground">Market / geography:</span>
+              <span>{geography.primary_markets.join(", ") || "—"}</span>
               <ConfidenceBadge level={geography.confidence} />
-            </p>
+            </div>
           )}
           {competitors.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
