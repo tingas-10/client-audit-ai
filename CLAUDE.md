@@ -41,7 +41,7 @@ Next.js (App Router) · TypeScript · Tailwind · shadcn/ui-style components · 
 ## Running the app (Phase 1)
 1. `npm install`
 2. Copy `.env.example` → `.env.local` and fill Supabase + Anthropic values.
-3. Apply the schema: set `SUPABASE_DB_URL`, then `npm run migrate` (runs `db/migrations/0001_init.sql`).
+3. Apply the schema: set `SUPABASE_DB_URL`, then `npm run migrate` (runs `db/migrations/*.sql` in order — `0001_init.sql` then `0002_grants.sql`). If applying via the Supabase SQL Editor instead, run **both** files in order; `0002` grants table privileges to the API roles (without it, writes fail with `42501 permission denied for table`).
 4. `npm run dev` → http://localhost:3000 · sign up at `/login` · paste a URL.
 5. `npm run build` / `npm run typecheck` / `npm run lint` for checks.
 
